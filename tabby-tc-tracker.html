@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tabby T&C Document Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f6f3;
+    --bg3: #efede8;
+    --border: #e5e3dd;
+    --border2: #d0cdc6;
+    --text: #1a1916;
+    --text2: #6b6860;
+    --text3: #a09d97;
+    --green-bg: #e8f4e8;
+    --green-text: #2d6a2d;
+    --amber-bg: #fef3e2;
+    --amber-text: #7a4f0d;
+    --blue-bg: #e8f0fb;
+    --blue-text: #1a4a8a;
+    --teal-bg: #e4f4f0;
+    --teal-text: #1a5c50;
+    --pill-active-bg: #1a1916;
+    --pill-active-text: #ffffff;
+    --card-hover: #fafaf8;
+    --accent: #1a1916;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    padding: 28px 24px 40px;
+    min-height: 100vh;
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left h1 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .header-left p {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .last-updated {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .stat:hover { background: var(--bg3); }
+  .stat.active { background: var(--bg3); border-color: var(--border2); }
+
+  .stat-val {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-val.green { color: var(--green-text); }
+  .stat-val.amber { color: var(--amber-text); }
+
+  .stat-lbl {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  .filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 2px;
+  }
+
+  .pill {
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 5px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.12s;
+    line-height: 1;
+  }
+
+  .pill:hover { border-color: var(--border2); color: var(--text); background: var(--bg2); }
+
+  .pill.active {
+    background: var(--pill-active-bg);
+    color: var(--pill-active-text);
+    border-color: var(--pill-active-bg);
+  }
+
+  .results-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .results-count {
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .sort-toggle {
+    font-size: 11px;
+    color: var(--text3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0;
+  }
+
+  .sort-toggle:hover { color: var(--text2); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+    gap: 7px;
+  }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    transition: border-color 0.12s, background 0.12s;
+    cursor: default;
+  }
+
+  .card:hover { border-color: var(--border2); background: var(--card-hover); }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-flag { font-size: 14px; line-height: 1; }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  .badge-published { background: var(--green-bg); color: var(--green-text); }
+  .badge-draft { background: var(--amber-bg); color: var(--amber-text); }
+
+  .card-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-type {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .card-type-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 400;
+  }
+
+  .type-terms { background: var(--blue-bg); color: var(--blue-text); }
+  .type-kfs { background: var(--teal-bg); color: var(--teal-text); }
+  .type-policy { background: var(--bg3); color: var(--text2); }
+
+  .card-ver {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--text2);
+  }
+
+  .card-date {
+    font-size: 11px;
+    color: var(--text3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  .jurisdiction-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 16px 0 8px;
+    display: none;
+  }
+
+  .jurisdiction-label.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Tabby Product T&C — Document Tracker</h1>
+    <p>All product terms, KFS, and policies across UAE and KSA</p>
+  </div>
+  <span class="last-updated" id="date-stamp"></span>
+</div>
+
+<div class="stats">
+  <div class="stat" onclick="filterStat('all', this)" id="stat-all">
+    <div class="stat-val" id="cnt-all">14</div>
+    <div class="stat-lbl">Total documents</div>
+  </div>
+  <div class="stat" onclick="filterStat('published', this)" id="stat-published">
+    <div class="stat-val green" id="cnt-pub">11</div>
+    <div class="stat-lbl">Published</div>
+  </div>
+  <div class="stat" onclick="filterStat('draft', this)" id="stat-draft">
+    <div class="stat-val amber" id="cnt-draft">3</div>
+    <div class="stat-lbl">In draft</div>
+  </div>
+  <div class="stat" id="stat-jur" style="cursor:default;">
+    <div class="stat-val" style="font-size:15px; display:flex; gap:10px; align-items:baseline;">
+      <span id="cnt-uae" style="color:var(--text)">10</span><span style="font-size:12px;color:var(--text3)">UAE</span>
+      <span style="color:var(--border2)">·</span>
+      <span id="cnt-ksa" style="color:var(--text)">4</span><span style="font-size:12px;color:var(--text3)">KSA</span>
+    </div>
+    <div class="stat-lbl">Jurisdictions</div>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="pill active" onclick="filter('all',this)" data-f="all">All</button>
+  <div class="filter-sep"></div>
+  <button class="pill" onclick="filter('published',this)" data-f="published">Published</button>
+  <button class="pill" onclick="filter('draft',this)" data-f="draft">Draft</button>
+  <div class="filter-sep"></div>
+  <button class="pill" onclick="filter('uae',this)" data-f="uae">🇦🇪 UAE</button>
+  <button class="pill" onclick="filter('ksa',this)" data-f="ksa">🇸🇦 KSA</button>
+  <div class="filter-sep"></div>
+  <button class="pill" onclick="filter('terms',this)" data-f="terms">Terms</button>
+  <button class="pill" onclick="filter('kfs',this)" data-f="kfs">KFS</button>
+  <button class="pill" onclick="filter('policy',this)" data-f="policy">Policy</button>
+</div>
+
+<div class="results-bar">
+  <span class="results-count" id="results-count">Showing 14 documents</span>
+  <button class="sort-toggle" onclick="toggleSort()" id="sort-btn">Sort by effective date ↓</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const docs = [
+  {name:"General Terms",     type:"Terms",  status:"published", jur:"uae", ver:"v1.0", date:"2026-03-24", dateLabel:"24 Mar 2026"},
+  {name:"Pay Later Terms",   type:"Terms",  status:"published", jur:"uae", ver:"v2.0", date:"2026-01-20", dateLabel:"20 Jan 2026"},
+  {name:"Card Terms",        type:"Terms",  status:"published", jur:"uae", ver:"v1.0", date:"2026-01-20", dateLabel:"20 Jan 2026"},
+  {name:"BNPL Terms",        type:"Terms",  status:"published", jur:"ksa", ver:"v1.0", date:"2025-04-24", dateLabel:"24 Apr 2025"},
+  {name:"Cash Terms",        type:"Terms",  status:"draft",     jur:"uae", ver:"v1.0", date:"",           dateLabel:""},
+  {name:"Pay Later KFS",     type:"KFS",   status:"published", jur:"uae", ver:"v2.0", date:"2026-01-20", dateLabel:"20 Jan 2026"},
+  {name:"Card KFS",          type:"KFS",   status:"published", jur:"uae", ver:"v2.0", date:"2026-01-20", dateLabel:"20 Jan 2026"},
+  {name:"BNPL KFS",          type:"KFS",   status:"published", jur:"ksa", ver:"v1.0", date:"2025-03-10", dateLabel:"10 Mar 2025"},
+  {name:"Cash KFS",          type:"KFS",   status:"draft",     jur:"uae", ver:"v1.0", date:"",           dateLabel:""},
+  {name:"Privacy Policy",    type:"Policy", status:"published", jur:"uae", ver:"v1.0", date:"2025-08-08", dateLabel:"8 Aug 2025"},
+  {name:"Privacy Policy",    type:"Policy", status:"draft",     jur:"ksa", ver:"v2.0", date:"",           dateLabel:""},
+  {name:"Buyer Protection",  type:"Policy", status:"published", jur:"uae", ver:"v1.0", date:"2026-01-19", dateLabel:"19 Jan 2026"},
+  {name:"Disputes Policy",   type:"Policy", status:"published", jur:"uae", ver:"v1.0", date:"2026-01-19", dateLabel:"19 Jan 2026"},
+  {name:"Merchant Cat. Codes",type:"Policy",status:"published", jur:"uae", ver:"v1.0", date:"",           dateLabel:""},
+];
+
+const flags = {uae:"🇦🇪", ksa:"🇸🇦"};
+const typeClass = {Terms:"type-terms", KFS:"type-kfs", Policy:"type-policy"};
+
+let currentFilter = "all";
+let sortDesc = true;
+
+function getFiltered() {
+  const maps = {
+    all:       () => true,
+    published: d => d.status === "published",
+    draft:     d => d.status === "draft",
+    uae:       d => d.jur === "uae",
+    ksa:       d => d.jur === "ksa",
+    terms:     d => d.type === "Terms",
+    kfs:       d => d.type === "KFS",
+    policy:    d => d.type === "Policy",
+  };
+  return docs.filter(maps[currentFilter] || maps.all);
+}
+
+function getSorted(data) {
+  return [...data].sort((a, b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return sortDesc
+      ? new Date(b.date) - new Date(a.date)
+      : new Date(a.date) - new Date(b.date);
+  });
+}
+
+function render() {
+  const data = getSorted(getFiltered());
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  document.getElementById("results-count").textContent =
+    `Showing ${data.length} document${data.length !== 1 ? "s" : ""}`;
+
+  if (data.length === 0) {
+    grid.innerHTML = `<div class="empty">No documents match this filter.</div>`;
+    return;
+  }
+
+  data.forEach(d => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="card-flag">${flags[d.jur]}</span>
+        <span class="badge badge-${d.status}">${d.status === "published" ? "Published" : "Draft"}</span>
+      </div>
+      <div class="card-name">${d.name}</div>
+      <div class="card-row">
+        <span class="card-type-badge ${typeClass[d.type]}">${d.type}</span>
+        <span class="card-ver">${d.ver}</span>
+      </div>
+      <div class="card-date">${d.dateLabel ? "Eff. " + d.dateLabel : "Not yet published"}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  updateCounts(data);
+}
+
+function updateCounts(filtered) {
+  document.getElementById("cnt-all").textContent  = filtered.length;
+  document.getElementById("cnt-pub").textContent  = filtered.filter(d => d.status === "published").length;
+  document.getElementById("cnt-draft").textContent = filtered.filter(d => d.status === "draft").length;
+  document.getElementById("cnt-uae").textContent  = filtered.filter(d => d.jur === "uae").length;
+  document.getElementById("cnt-ksa").textContent  = filtered.filter(d => d.jur === "ksa").length;
+}
+
+function filter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".stat").forEach(s => s.classList.remove("active"));
+  render();
+}
+
+function filterStat(f, statEl) {
+  currentFilter = f;
+  document.querySelectorAll(".stat").forEach(s => s.classList.remove("active"));
+  statEl.classList.add("active");
+  document.querySelectorAll(".pill").forEach(p => {
+    p.classList.toggle("active", p.dataset.f === f);
+  });
+  render();
+}
+
+function toggleSort() {
+  sortDesc = !sortDesc;
+  document.getElementById("sort-btn").textContent =
+    `Sort by effective date ${sortDesc ? "↓" : "↑"}`;
+  render();
+}
+
+const now = new Date();
+document.getElementById("date-stamp").textContent =
+  now.toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
+
+render();
+</script>
+</body>
+</html>
